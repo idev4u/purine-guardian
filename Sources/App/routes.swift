@@ -1,4 +1,5 @@
 import Vapor
+import MongoSwift
 
 /// Register your application's routes here.
 public func routes(_ router: Router) throws {
@@ -8,13 +9,26 @@ public func routes(_ router: Router) throws {
     }
     
     // Basic "Hello, world!" example
-    router.get("hello") { req in
+    router.get("hello") { req -> String in
+        mongodb_example()
+        print("hello")
         return "Hello, world!"
     }
 
-    // Example of configuring a controller
-    let todoController = TodoController()
-    router.get("todos", use: todoController.index)
-    router.post("todos", use: todoController.create)
-    router.delete("todos", Todo.parameter, use: todoController.delete)
+
+    func mongodb_example(){
+        // initialize global state
+        MongoSwift.initialize()
+        
+        let client = try! MongoClient(connectionString: "mongodb://localhost:27017")
+        let db = try! client.db("myDB")
+        let collection = try! db.createCollection("myCollection")
+        
+        // free all resources
+        MongoSwift.cleanup()
+        
+        let doc: Document = ["_id": 100, "a": 1, "b": 2, "c": 3]
+        let result = try! collection.insertOne(doc)
+        print(result?.insertedId ?? "") // prints `100`
+    }
 }
