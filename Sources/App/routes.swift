@@ -18,14 +18,14 @@ public func routes(_ router: Router) throws {
 
     func mongodb_example(){
         // initialize global state
-        MongoSwift.initialize()
+//        MongoSwift.initialize()
         
         let client = try! MongoClient(connectionString: "mongodb://localhost:27017")
         let db = try! client.db("myDB")
         let collection = try! db.createCollection("myCollection")
         
         // free all resources
-        MongoSwift.cleanup()
+//        MongoSwift.cleanup()
         
         let doc: Document = ["_id": 100, "a": 1, "b": 2, "c": 3]
         let result = try! collection.insertOne(doc)
