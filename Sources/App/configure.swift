@@ -19,7 +19,13 @@ public func configure(_ config: inout Config, _ env: inout Environment, _ servic
     // Register Mongo Client
     let client = try! MongoClient(connectionString: "mongodb://localhost:27017")
     let db = try! client.db("myDB")
-    let collection = try! db.createCollection("myCollection")
+    let collection:MongoCollection<Document>
+    do {
+        collection = try db.createCollection("myCollection")
+    } catch {
+        collection = try db.collection("myCollection")
+    }
+    
     services.register(collection)
     
 
