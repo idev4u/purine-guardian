@@ -26,10 +26,10 @@ public func configure(_ config: inout Config, _ env: inout Environment, _ servic
         collection = try db.collection("myCollection")
     }
     
-    services.register(collection)
+    services.register(client)
     
 
 }
 // make mongo collection service ready
-extension MongoCollection: Service {
+extension MongoClient: Service {
 }
