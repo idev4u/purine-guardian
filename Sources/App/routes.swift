@@ -18,11 +18,14 @@ public func routes(_ router: Router) throws {
 
 
     func mongodb_example(client: MongoClient ){
-        let doc2: FoodStuff = FoodStuff(amount: 20, description: "banane")
-//        let collection = try collection("myCollection", withType: FoodStuff.self)
-        let collection = try! client.db("myDB").collection("myCollection", withType: FoodStuff.self)
-//        let doc: Document = ["_id": 100, "a": 1, "b": 2, "c": 3]
-        let result = try! collection.insertOne(doc2)
+        let fs: FoodStuff = FoodStuff(amount: 20, description: "banane")
+        print(Date().timeIntervalSince1970)
+        let dailySum = DailySummary(listOfFoodStuff: [fs], timestamp: Date().timeIntervalSince1970)
+//        dailySum.listOfFoodStuff[0] = fs
+//        let collection = try! client.db("myDB").collection("myCollection", withType: FoodStuff.self)
+
+        let collection = try! client.db("myDB").collection("myCollection", withType: DailySummary.self)
+        let result = try! collection.insertOne(dailySum)
         print(result?.insertedId ?? "") // prints `100`
     }
 }
