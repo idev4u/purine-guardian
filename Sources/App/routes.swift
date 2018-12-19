@@ -10,23 +10,15 @@ public func routes(_ router: Router) throws {
     
     // Basic "Hello, world!" example
     router.get("hello") { req -> String in
-        mongodb_example()
+        let collection = try! req.make(MongoCollection<Document>.self)
+        mongodb_example(collection: collection)
         print("hello")
         return "Hello, world!"
     }
 
 
-    func mongodb_example(){
-        // initialize global state
-//        MongoSwift.initialize()
-        
-        let client = try! MongoClient(connectionString: "mongodb://localhost:27017")
-        let db = try! client.db("myDB")
-        let collection = try! db.createCollection("myCollection")
-        
-        // free all resources
-//        MongoSwift.cleanup()
-        
+    func mongodb_example(collection: MongoCollection<Document> ){
+       
         let doc: Document = ["_id": 100, "a": 1, "b": 2, "c": 3]
         let result = try! collection.insertOne(doc)
         print(result?.insertedId ?? "") // prints `100`
