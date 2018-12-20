@@ -18,14 +18,21 @@ public func routes(_ router: Router) throws {
 
 
     func insertNewItem(client: MongoClient ){
+        // create a foodstuff item
         let fs: FoodStuff = FoodStuff(amount: 20, description: "banane")
-        print(Date().timeIntervalSince1970)
-        let dailySum = DailySummary(listOfFoodStuff: [fs], timestamp: Date().timeIntervalSince1970)
+        
+        // manage the date
+        let dayOnly = DateFormatterController().currentDayInSeconds()
+
+        // create a daily sum item
+        let dailySum = DailySummary(listOfFoodStuff: [fs], timestamp: dayOnly.timeIntervalSince1970 )
+        
+        
         let collection = try! client.db("myDB").collection("myCollection", withType: DailySummary.self)
         let result = try! collection.insertOne(dailySum)
         print(result?.insertedId ?? "") // prints `100`
         
-        let query: Document = ["timestamp": 1545229259.108623]
+        let query: Document = ["timestamp": dayOnly.timeIntervalSince1970]
         let documents = try! collection.find(query)
         for d in documents {
             print(d)
