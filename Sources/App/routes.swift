@@ -29,8 +29,24 @@ public func routes(_ router: Router) throws {
         
         
         let collection = try! client.db("myDB").collection("myCollection", withType: DailySummary.self)
-        let result = try! collection.insertOne(dailySum)
-        print(result?.insertedId ?? "") // prints `100`
+        
+        // Create an unique index on timestamp
+        // because I expect only one daily summery.
+        
+        let indexOptions = IndexOptions(name: "timestamp", unique: true)
+        let model = IndexModel(keys: [dailySum.timestamp] , options: indexOptions)
+        try! collection.createIndex(model)
+
+        // Create daily sum if it not already exist
+        let result:InsertOneResult
+        do {
+            try result = collection.insertOne(dailySum)!
+            print(result.insertedId ?? "")
+        } catch {
+            print("ok the item already exist! Nothing to do :-)")
+        }
+//        let result = try! collection.insertOne(dailySum)
+//        print(result.insertedId ?? "") // prints `100`
         
         let query: Document = ["timestamp": dayOnly.timeIntervalSince1970]
         let documents = try! collection.find(query)
