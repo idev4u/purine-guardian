@@ -42,8 +42,11 @@ public func routes(_ router: Router) throws {
         do {
             try result = collection.insertOne(dailySum)!
             print(result.insertedId ?? "")
-        } catch {
+        } catch let error as MongoError {
+            print("mongodb error message: \(error) ")
             print("ok the item already exist! Nothing to do :-)")
+        } catch {
+            print("Ups something went wrong!")
         }
 //        let result = try! collection.insertOne(dailySum)
 //        print(result.insertedId ?? "") // prints `100`
