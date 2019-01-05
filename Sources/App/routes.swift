@@ -52,9 +52,24 @@ public func routes(_ router: Router) throws {
 //        print(result.insertedId ?? "") // prints `100`
         
         let query: Document = ["timestamp": dayOnly.timeIntervalSince1970]
-        let documents = try! collection.find(query)
+        print("how many are exist? \(try! collection.count(query))")
+        
+        var documents = try! collection.find(query)
+//      Get the first element from the iterator documents
+        var dailyItem = documents.next()
+
+//      Update the value with a new entry of food stuff
+        dailyItem!.listOfFoodStuff.append(FoodStuff(amount: 20, description: "ananas"))
+        
+//      Update the entry in the collection maybe there is other way to do this
+        try! collection.findOneAndReplace(filter: query, replacement: dailyItem!)
+       
+//      Refresh the documents
+        documents = try! collection.find(query)
+        
         for d in documents {
             print(d)
+           
         }
     }
     
