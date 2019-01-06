@@ -27,6 +27,13 @@ public func routes(_ router: Router) throws {
         removeFoodstuffAtIndex(client: client, index: index)
         return "delte item for index \(index)"
     }
+    
+    router.get("/purine/dailysummary/") { req -> String in
+         let client = try! req.make(MongoClient.self)
+       
+        return  "\(getCurrentDialySummary(client: client))"
+    }
+    
 
 
     func insertNewItem(client: MongoClient ){
@@ -64,7 +71,7 @@ public func routes(_ router: Router) throws {
         let query: Document = ["timestamp": dayOnly.timeIntervalSince1970]
         print("how many are exist? \(try! collection.count(query))")
         
-//        addFoodStuff(client: client, amount: 20, description: "apple")
+
        
 //      Refresh the documents
         let documents = try! collection.find(query)
@@ -88,6 +95,17 @@ public func routes(_ router: Router) throws {
         var dailyItem = getObjectFromDb(client: client)
         dailyItem.listOfFoodStuff.remove(at: index)
         updateObjectInDb(collectionObject: dailyItem, client: client)
+    }
+    
+    func getCurrentDialySummary(client :MongoClient) -> [DailySummary] {
+        let collection = try! client.db("myDB").collection("myCollection", withType: DailySummary.self)
+        let documents = try! collection.find(["timestamp": DateFormatterController().currentDayInSeconds().timeIntervalSince1970])
+        var listOfDailySummary = [DailySummary]()
+        for d in documents {
+            print(d)
+            listOfDailySummary.append(d)
+        }
+        return listOfDailySummary
     }
     
     //Mongo actions
