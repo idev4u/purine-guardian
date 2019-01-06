@@ -9,23 +9,27 @@ public func routes(_ router: Router) throws {
     }
     
     // Basic "Hello, world!" example
-    router.get("/purine/dailysummary/new") { req -> String in
+    router.post("/purine/dailysummary/") { req -> HTTPStatus in
         let client = try! req.make(MongoClient.self)
         insertNewItem(client: client)
-        return "A new daily summary object now exist"
+        return HTTPStatus.ok
     }
     
-    router.get("/purine/dailysummary/add") { req -> String in
+    router.put(FoodStuff.self, at: "/purine/dailysummary/") { req, payloadFoodStuff -> HTTPStatus in
         let client = try! req.make(MongoClient.self)
-        addFoodStuff(client: client, amount: 20, description: "apples")
-        return "OK" // TODO reply with 201 and switch to post
+        
+        print("\(payloadFoodStuff)")
+        addFoodStuff(client: client, amount: payloadFoodStuff.amount!, description: payloadFoodStuff.description!)
+        return HTTPStatus.ok
     }
     
-    router.get("/purine/dailysummary/delete", Int.parameter) { req -> String in
+    router.delete("/purine/dailysummary/", Int.parameter) { req -> HTTPResponse in
         let index = try req.parameters.next(Int.self)
         let client = try! req.make(MongoClient.self)
         removeFoodstuffAtIndex(client: client, index: index)
-        return "delte item for index \(index)"
+//        return "delte item for index \(index)"
+        
+        return HTTPResponse(status: .ok, body: "delte item for index \(index)")
     }
     
     router.get("/purine/dailysummary/") { req -> String in
@@ -38,13 +42,13 @@ public func routes(_ router: Router) throws {
 
     func insertNewItem(client: MongoClient ){
         // create a foodstuff item
-        let fs: FoodStuff = FoodStuff(amount: 20, description: "banane")
+//        let fs: FoodStuff = FoodStuff(amount: 20, description: "banane")
         
         // manage the date
         let dayOnly = DateFormatterController().currentDayInSeconds()
 
         // create a daily sum item
-        let dailySum = DailySummary(listOfFoodStuff: [fs], timestamp: dayOnly.timeIntervalSince1970 )
+        let dailySum = DailySummary(listOfFoodStuff: [], timestamp: dayOnly.timeIntervalSince1970 )
         
         
         let collection = try! client.db("myDB").collection("myCollection", withType: DailySummary.self)
@@ -68,18 +72,8 @@ public func routes(_ router: Router) throws {
             print("Ups something went wrong!")
         }
         
-        let query: Document = ["timestamp": dayOnly.timeIntervalSince1970]
-        print("how many are exist? \(try! collection.count(query))")
-        
-
-       
-//      Refresh the documents
-        let documents = try! collection.find(query)
-        
-        for d in documents {
-            print(d)
-           
-        }
+//        let query: Document = ["timestamp": dayOnly.timeIntervalSince1970]
+//        print("how many are exist? \(try! collection.count(query))")
     }
     
     
