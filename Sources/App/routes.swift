@@ -3,8 +3,8 @@ import MongoSwift
 
 /// Register your application's routes here.
 public func routes(_ router: Router) throws {
-
-/// Endpoints
+    
+    /// Endpoints
     // info
     router.get { req in
         return "this is the purine-guradin api"
@@ -28,29 +28,27 @@ public func routes(_ router: Router) throws {
         let index = try req.parameters.next(Int.self)
         let client = try! req.make(MongoClient.self)
         removeFoodstuffAtIndex(client: client, index: index)
-        return HTTPResponse(status: .ok, body: "delte item for index \(index)")
+        return HTTPResponse(status: .ok, body: "delete item for index \(index)")
     }
     
     // read
-    router.get("/purine/dailysummary/") { req -> String in
-         let client = try! req.make(MongoClient.self)
-       
-        return  "\(getCurrentDialySummary(client: client))"
+    router.get("/purine/dailysummary/") { req -> [DailySummary] in
+        let client = try! req.make(MongoClient.self)
+        return getCurrentDialySummary(client: client)
     }
     
-/// DailySummaery Model Interaction
-/*
+    /// DailySummaery Model Interaction
+    /*
      this has to be moved in a Daily Summary Controller
-*/
- 
+     */
+    
     func insertNewItem(client: MongoClient ){
-       
+        
         // manage the date
         let dayOnly = DateFormatterController().currentDayInSeconds()
-
+        
         // create a daily sum item
         let dailySum = DailySummary(listOfFoodStuff: [], timestamp: dayOnly.timeIntervalSince1970 )
-        
         
         let collection = try! client.db("myDB").collection("myCollection", withType: DailySummary.self)
         
@@ -59,8 +57,8 @@ public func routes(_ router: Router) throws {
         
         let indexOptions = IndexOptions(name: "timestamp", unique: true)
         let model = IndexModel(keys: [dailySum.timestamp] , options: indexOptions)
-        try! collection.createIndex(model) 
-
+        try! collection.createIndex(model)
+        
         // Create daily sum if it not already exist
         let result:InsertOneResult
         do {
@@ -73,19 +71,20 @@ public func routes(_ router: Router) throws {
             print("Ups something went wrong!")
         }
         
-//        let query: Document = ["timestamp": dayOnly.timeIntervalSince1970]
-//        print("how many are exist? \(try! collection.count(query))")
+        //        let query: Document = ["timestamp": dayOnly.timeIntervalSince1970]
+        //        print("how many are exist? \(try! collection.count(query))")
     }
     
-
     func addFoodStuff(client :MongoClient, amount:Int, description : String){
         var dailyItem = getObjectFromDb(client: client)
         dailyItem.listOfFoodStuff.append(FoodStuff(amount: amount, description: description))
+        print("this meal was add \(dailyItem.listOfFoodStuff.debugDescription)")
         updateObjectInDb(collectionObject: dailyItem, client: client)
     }
     
     func removeFoodstuffAtIndex(client :MongoClient, index:Int){
         var dailyItem = getObjectFromDb(client: client)
+        print("this meal was removed \(dailyItem.listOfFoodStuff[index])")
         dailyItem.listOfFoodStuff.remove(at: index)
         updateObjectInDb(collectionObject: dailyItem, client: client)
     }
@@ -101,7 +100,7 @@ public func routes(_ router: Router) throws {
         return listOfDailySummary
     }
     
-/// Mongo actions
+    /// Mongo actions
     /*
      this has to be moved in a DataStore Controller
      */
