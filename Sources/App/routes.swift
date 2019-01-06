@@ -9,10 +9,21 @@ public func routes(_ router: Router) throws {
     }
     
     // Basic "Hello, world!" example
-    router.get("hello") { req -> String in
+    router.get("/purine/dailysummary/new") { req -> String in
         let client = try! req.make(MongoClient.self)
         insertNewItem(client: client)
-        print("hello")
+        return "A new daily summary object now exist"
+    }
+    
+    router.get("/purine/dailysummary/add") { req -> String in
+        let client = try! req.make(MongoClient.self)
+        addFoodStuff(client: client, amount: 20, description: "apples")
+        return "OK" // TODO reply with 201 and switch to post
+    }
+    
+    router.get("/purine/dailysummary/delete") { req -> String in
+        let client = try! req.make(MongoClient.self)
+        removeFoodstuffAtIndex(client: client, index: 2)
         return "Hello, world!"
     }
 
@@ -52,11 +63,7 @@ public func routes(_ router: Router) throws {
         let query: Document = ["timestamp": dayOnly.timeIntervalSince1970]
         print("how many are exist? \(try! collection.count(query))")
         
-        var dailyItem = getObjectFromDb(client: client)
-
-        dailyItem.listOfFoodStuff.append(FoodStuff(amount: 20, description: "ananas"))
-        
-        updateObjectInDb(collectionObject: dailyItem, client: client)
+//        addFoodStuff(client: client, amount: 20, description: "apple")
        
 //      Refresh the documents
         let documents = try! collection.find(query)
@@ -67,8 +74,19 @@ public func routes(_ router: Router) throws {
         }
     }
     
-    func update(desc: String, amount: Int) -> String {
-        return "not implemented yet"
+    
+    // DailySummaery Interaction
+    func addFoodStuff(client :MongoClient, amount:Int, description : String){
+        var dailyItem = getObjectFromDb(client: client)
+        dailyItem.listOfFoodStuff.append(FoodStuff(amount: amount, description: description))
+        updateObjectInDb(collectionObject: dailyItem, client: client)
+        
+    }
+    
+    func removeFoodstuffAtIndex(client :MongoClient, index:Int){
+        var dailyItem = getObjectFromDb(client: client)
+        dailyItem.listOfFoodStuff.remove(at: index)
+        updateObjectInDb(collectionObject: dailyItem, client: client)
     }
     
     //Mongo actions
