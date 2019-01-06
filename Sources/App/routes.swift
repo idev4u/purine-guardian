@@ -35,7 +35,7 @@ public func routes(_ router: Router) throws {
         
         let indexOptions = IndexOptions(name: "timestamp", unique: true)
         let model = IndexModel(keys: [dailySum.timestamp] , options: indexOptions)
-        try! collection.createIndex(model)
+        try! collection.createIndex(model) 
 
         // Create daily sum if it not already exist
         let result:InsertOneResult
@@ -48,24 +48,18 @@ public func routes(_ router: Router) throws {
         } catch {
             print("Ups something went wrong!")
         }
-//        let result = try! collection.insertOne(dailySum)
-//        print(result.insertedId ?? "") // prints `100`
         
         let query: Document = ["timestamp": dayOnly.timeIntervalSince1970]
         print("how many are exist? \(try! collection.count(query))")
         
-        var documents = try! collection.find(query)
-//      Get the first element from the iterator documents
-        var dailyItem = documents.next()
+        var dailyItem = getObjectFromDb(client: client)
 
-//      Update the value with a new entry of food stuff
-        dailyItem!.listOfFoodStuff.append(FoodStuff(amount: 20, description: "ananas"))
+        dailyItem.listOfFoodStuff.append(FoodStuff(amount: 20, description: "ananas"))
         
-//      Update the entry in the collection maybe there is other way to do this
-        try! collection.findOneAndReplace(filter: query, replacement: dailyItem!)
+        updateObjectInDb(collectionObject: dailyItem, client: client)
        
 //      Refresh the documents
-        documents = try! collection.find(query)
+        let documents = try! collection.find(query)
         
         for d in documents {
             print(d)
@@ -75,5 +69,21 @@ public func routes(_ router: Router) throws {
     
     func update(desc: String, amount: Int) -> String {
         return "not implemented yet"
+    }
+    
+    //Mongo actions
+    func updateObjectInDb(collectionObject :DailySummary, client: MongoClient) {
+        let query: Document = ["timestamp": DateFormatterController().currentDayInSeconds().timeIntervalSince1970]
+        let collection = try! client.db("myDB").collection("myCollection", withType: DailySummary.self)
+        try! collection.findOneAndReplace(filter: query, replacement: collectionObject)
+        
+    }
+    
+    func getObjectFromDb(client: MongoClient) ->DailySummary {
+        let query: Document = ["timestamp": DateFormatterController().currentDayInSeconds().timeIntervalSince1970]
+        let collection = try! client.db("myDB").collection("myCollection", withType: DailySummary.self)
+        let documents = try! collection.find(query)
+        //      Get the first element from the iterator documents
+        return documents.next()!
     }
 }
