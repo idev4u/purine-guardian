@@ -21,10 +21,11 @@ public func routes(_ router: Router) throws {
         return "OK" // TODO reply with 201 and switch to post
     }
     
-    router.get("/purine/dailysummary/delete") { req -> String in
+    router.get("/purine/dailysummary/delete", Int.parameter) { req -> String in
+        let index = try req.parameters.next(Int.self)
         let client = try! req.make(MongoClient.self)
-        removeFoodstuffAtIndex(client: client, index: 2)
-        return "Hello, world!"
+        removeFoodstuffAtIndex(client: client, index: index)
+        return "delte item for index \(index)"
     }
 
 
