@@ -3,47 +3,48 @@ import MongoSwift
 
 /// Register your application's routes here.
 public func routes(_ router: Router) throws {
-    // Basic "It works" example
+
+/// Endpoints
+    // info
     router.get { req in
-        return "It works!"
+        return "this is the purine-guradin api"
     }
     
-    // Basic "Hello, world!" example
+    // create
     router.post("/purine/dailysummary/") { req -> HTTPStatus in
         let client = try! req.make(MongoClient.self)
         insertNewItem(client: client)
         return HTTPStatus.ok
     }
-    
+    // update
     router.put(FoodStuff.self, at: "/purine/dailysummary/") { req, payloadFoodStuff -> HTTPStatus in
         let client = try! req.make(MongoClient.self)
-        
-        print("\(payloadFoodStuff)")
         addFoodStuff(client: client, amount: payloadFoodStuff.amount!, description: payloadFoodStuff.description!)
         return HTTPStatus.ok
     }
     
+    // delete
     router.delete("/purine/dailysummary/", Int.parameter) { req -> HTTPResponse in
         let index = try req.parameters.next(Int.self)
         let client = try! req.make(MongoClient.self)
         removeFoodstuffAtIndex(client: client, index: index)
-//        return "delte item for index \(index)"
-        
         return HTTPResponse(status: .ok, body: "delte item for index \(index)")
     }
     
+    // read
     router.get("/purine/dailysummary/") { req -> String in
          let client = try! req.make(MongoClient.self)
        
         return  "\(getCurrentDialySummary(client: client))"
     }
     
-
-
+/// DailySummaery Model Interaction
+/*
+     this has to be moved in a Daily Summary Controller
+*/
+ 
     func insertNewItem(client: MongoClient ){
-        // create a foodstuff item
-//        let fs: FoodStuff = FoodStuff(amount: 20, description: "banane")
-        
+       
         // manage the date
         let dayOnly = DateFormatterController().currentDayInSeconds()
 
@@ -76,13 +77,11 @@ public func routes(_ router: Router) throws {
 //        print("how many are exist? \(try! collection.count(query))")
     }
     
-    
-    // DailySummaery Interaction
+
     func addFoodStuff(client :MongoClient, amount:Int, description : String){
         var dailyItem = getObjectFromDb(client: client)
         dailyItem.listOfFoodStuff.append(FoodStuff(amount: amount, description: description))
         updateObjectInDb(collectionObject: dailyItem, client: client)
-        
     }
     
     func removeFoodstuffAtIndex(client :MongoClient, index:Int){
@@ -102,7 +101,10 @@ public func routes(_ router: Router) throws {
         return listOfDailySummary
     }
     
-    //Mongo actions
+/// Mongo actions
+    /*
+     this has to be moved in a DataStore Controller
+     */
     func updateObjectInDb(collectionObject :DailySummary, client: MongoClient) {
         let query: Document = ["timestamp": DateFormatterController().currentDayInSeconds().timeIntervalSince1970]
         let collection = try! client.db("myDB").collection("myCollection", withType: DailySummary.self)
