@@ -25,7 +25,15 @@ public func configure(_ config: inout Config, _ env: inout Environment, _ servic
     } catch {
         collection = try db.collection("myCollection")
     }
-    
+    // Create an unique index on timestamp
+    // because I expect only one daily 
+    let indexOptions = IndexOptions(name: "timestamp", unique: true)
+    let model = IndexModel(keys: [ "timestamp": 1] , options: indexOptions)
+    do {
+        try collection.createIndex(model)
+    } catch {
+        print("Index already exist!")
+    }
     services.register(client)
     
 
